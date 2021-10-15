@@ -1,15 +1,11 @@
 'use strict';
 
-//importy bibliotek i innych plików
-
 import './css/styles.css';
 import Notiflix from 'notiflix';
 import { fetchCountries } from './fetchCountries';
 
 var debounce = require('lodash.debounce');
 const DEBOUNCE_DELAY = 300;
-
-//zdefiniowane zmienne dla ID w htmlu
 
 const searchBox = document.querySelector('input#search-box');
 const countryList = document.querySelector('ul.country-list');
@@ -25,8 +21,7 @@ const findCountry = () => {
   } else {
     fetchCountries(name)
       .then(data => {
-        console.log('albo tu sa potrzebne dane:', data);
-        console.log('ilosc', data.length);
+        console.log('Results', data.length);
         if (data.length > 10) {
           Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
           countryList.innerHTML = '';
@@ -38,7 +33,6 @@ const findCountry = () => {
           renderInfo(data);
           countryList.innerHTML = '';
         }
-        // else
       })
       .catch(error => {
         Notiflix.Notify.failure('Oops, there is no country with that name');
@@ -46,5 +40,32 @@ const findCountry = () => {
         countryInfo.innerHTML = '';
       });
   }
-  // .catch(error => console.log('error fetchCountries:', error));
 };
+const renderList = data => {
+  const markup = data
+    .map(d => {
+      return `<li class="list__item">
+      <img class="list__flag" src="${d.flag}" alt="Flag of ${d.name}" width="55" >
+      <p class="list__name">${d.name}</p>
+      </li>`;
+    })
+    .join('');
+  countryList.innerHTML = markup;
+};
+
+const renderInfo = data => {
+  const markup = data
+    .map(d => {
+      return `<img class="info__flag" src="${d.flag}" alt="Flag of ${d.name}" width="55" >
+      <span class="info__name">${d.name}</span>
+      <p class="info__data"><b>Capital</b>: ${d.capital}</p>
+      <p class="info__data"><b>Population</b>: ${d.population}</p>
+      <p class="info__data"><b>Languages</b>: ${d.languages.map(
+        language => ' ' + language.name,
+      )}</p>`;
+    })
+    .join('');
+  countryInfo.innerHTML = markup;
+};
+
+searchBox.addEventListener('input', debounce(findCountry, DEBOUNCE_DELAY));
